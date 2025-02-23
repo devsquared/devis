@@ -1,9 +1,18 @@
-use clap::Parser;
+use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
+#[command(name="devis", subcommand_required(true))]
 pub struct CommandLineArgs {
-    /// The pattern to look for
-    pub pattern: String,
-    /// The path to the file to read
-    pub path: std::path::PathBuf,
+    #[command(subcommand)]
+    pub cmd: Commands,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum Commands {
+    NoteIt{
+        #[arg(short = 'n', long="name", required(true))]
+        name: String,
+        #[arg(short = 't', long="withtoc", required(false))]
+        with_toc: bool,
+    },
 }
