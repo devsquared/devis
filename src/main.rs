@@ -1,26 +1,31 @@
-use anyhow::{Context, Ok, Result};
 use clap::Parser;
-use std::{fs::File, io::{self, stdout, BufReader, Write}};
+use color_eyre::eyre::Result;
+use std::{fs::File, io::{self, stdout, BufReader, Write}, process::exit};
 
-#[derive(Parser)]
-struct Cli {
-    /// The pattern to look for
-    pattern: String,
-    /// The path to the file to read
-    path: std::path::PathBuf,
-}
+mod config;
 
-fn main() -> Result<(), anyhow::Error> {
-    let args = Cli::parse();
+// TODO: deal with error cases from all run commands here
+fn run() -> Result<()> {
+    let args = config::CommandLineArgs::parse();
 
-    let file = File::open(&args.path)
-        .with_context(|| format!("could not read file `{}`", args.path.display()))?;
+    let file = File::open(&args.path)?;
     let reader = BufReader::new(file);
 
     find_matches(&args.pattern, reader, stdout())
 }
 
-fn find_matches(pattern: &str, reader: impl std::io::BufRead, writer: impl std::io::Write) -> Result<(), anyhow::Error> {
+fn main() {
+    match run() {
+        Ok(()) => {
+            exit(0);
+        }
+        Err(_) => { // utilize below to pretty print all context and debug info if verbose
+            exit(1);
+        }
+    }
+}
+
+fn find_matches(pattern: &str, reader: impl std::io::BufRead, writer: impl std::io::Write) -> Result<()> {
     let mut wribuffer = io::BufWriter::new(writer);
     for line in reader.lines() {
         let l = line?;
@@ -32,20 +37,4 @@ fn find_matches(pattern: &str, reader: impl std::io::BufRead, writer: impl std::
     wribuffer.flush()?;
 
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use std::io::{stdin, Read};
-
-    use super::*;
-
-    // #[test]
-    // fn test_find_matches() {
-    //     let mut actual = Vec::new();
-    //     let mut reader = BufReader::new(stdin());
-    //     stdin.write_all("pattern yeah\nsome more text");
-    //     find_matches("pattern", reader, &mut actual);
-    //     assert_eq!(actual, b"pattern yeah\n")
-    // }
 }
