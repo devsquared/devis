@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -9,10 +11,16 @@ pub struct CommandLineArgs {
 
 #[derive(Subcommand, Debug, Clone)]
 pub enum Commands {
-    NoteIt{
-        #[arg(short = 'n', long="name", required(true))]
+    Note{
+        #[arg(short='n', long="name", required(true))]
         name: String,
-        #[arg(short = 't', long="withtoc", required(false))]
+        #[arg(short='p', long="path", required(false))] // add extra help stuff to note that it will go in default note directory if none provided
+        path: PathBuf,
+        #[arg(short='t', long="withtoc", required(false))]
         with_toc: bool,
     },
 }
+
+// TODO: need to add config file reader and creator here.
+//  known needed fields:
+//   - default_note_dir

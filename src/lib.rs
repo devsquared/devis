@@ -1,2 +1,2 @@
-mod config;
-mod noteit;
+// mod config;
+// mod note;

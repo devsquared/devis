@@ -1,19 +1,23 @@
-use clap::Parser;
-use color_eyre::eyre::{Result};
-use config::Commands;
-use noteit::create_note;
-use std::{io::{self, Write}, process::exit};
+use std::process::exit;
 use std::result::Result::Ok;
 
+use clap::Parser;
+use color_eyre::eyre::Result;
+use config::Commands;
+use note::create_note;
+
 mod config;
-mod noteit;
+mod note;
 
 // TODO: deal with error cases from all run commands here
 fn run() -> Result<()> {
+    color_eyre::install()?;
+
+    
     let args = config::CommandLineArgs::parse();
 
     match args.cmd {
-        Commands::NoteIt { name, with_toc } => return create_note(name, with_toc),
+        Commands::Note { name, path, with_toc } => return create_note(name, path, with_toc),
     }
 }
 
@@ -26,18 +30,4 @@ fn main() {
             exit(1);
         }
     }
-}
-
-fn find_matches(pattern: &str, reader: impl std::io::BufRead, writer: impl std::io::Write) -> Result<()> {
-    let mut wribuffer = io::BufWriter::new(writer);
-    for line in reader.lines() {
-        let l = line?;
-        
-        if l.contains(pattern) {
-           writeln!(wribuffer, "{}", l)?;
-        }
-    }
-    wribuffer.flush()?;
-
-    Ok(())
 }
