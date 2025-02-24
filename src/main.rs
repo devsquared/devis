@@ -1,17 +1,20 @@
 use clap::Parser;
-use color_eyre::eyre::Result;
-use std::{fs::File, io::{self, stdout, BufReader, Write}, process::exit};
+use color_eyre::eyre::{Result};
+use config::Commands;
+use noteit::create_note;
+use std::{io::{self, Write}, process::exit};
+use std::result::Result::Ok;
 
 mod config;
+mod noteit;
 
 // TODO: deal with error cases from all run commands here
 fn run() -> Result<()> {
     let args = config::CommandLineArgs::parse();
 
-    let file = File::open(&args.path)?;
-    let reader = BufReader::new(file);
-
-    find_matches(&args.pattern, reader, stdout())
+    match args.cmd {
+        Commands::NoteIt { name, with_toc } => return create_note(name, with_toc),
+    }
 }
 
 fn main() {
