@@ -8,3 +8,6 @@ target/
 
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
+
+# Explicitly ignore `config.toml` as we do not want to store this.
+config.toml
