@@ -21,7 +21,7 @@ pub enum Commands {
         #[arg(short='n', long="name", required(true))]
         name: String,
         #[arg(short='p', long="path", required(false))] // add extra help stuff to note that it will go in default note directory if none provided
-        path: PathBuf,
+        path: Option<PathBuf>,
         #[arg(short='t', long="withtoc", required(false))]
         with_toc: bool,
     },
@@ -34,14 +34,22 @@ pub enum Commands {
 #[serde(deny_unknown_fields)]
 /// Configuration file
 pub struct ConfigFile {
-    default_note_dir: Option<PathBuf>,
+   pub default_note_dir: Option<PathBuf>,
 }
 
 impl ConfigFile {
-    fn check_file() -> Result<Option<PathBuf>> {
+    pub fn check_file() -> Result<Option<PathBuf>> {
         // check for existence at config dir and local to executable
         
 
         Ok(None)
+    }
+
+    pub fn create_default() -> Self {
+        // write a default config file and return it
+
+        ConfigFile{
+            default_note_dir: None
+        }
     }
 }
