@@ -1,10 +1,10 @@
 use std::fs;
-use std::path::{PathBuf};
+use std::path::PathBuf;
 use std::env::current_exe;
 use std::result::Result::Ok;
 
 use clap::{Parser, Subcommand};
-use color_eyre::eyre::{eyre, Result};
+use color_eyre::eyre::Result;
 use dirs::config_dir;
 use serde::Deserialize;
 
@@ -38,9 +38,14 @@ pub struct ConfigFile {
 
 impl ConfigFile {
     pub fn load(config_path: PathBuf) -> Result<ConfigFile> {
-        let contents = match fs::read_to_string(config_path) {
-            Ok(c) => Ok(c),
-            Err(_) => eyre!("unable to read config file"),
+        match fs::read_to_string(config_path) {
+            Ok(c) => {
+                match toml::from_str(&c) {
+                    Ok(config_file) => return Ok(config_file),
+                    Err(_) => todo!(), //TODO: properly handle error
+                }
+            },
+            Err(_) => todo!(), //TODO: properly handle error
         };
 
         
@@ -51,7 +56,7 @@ impl ConfigFile {
         let mut found: Option<PathBuf> = None;
         match config_dir() { // check first in config dir
             Some(p) => {
-                let devis_config_path = p.join("devis").join("devis.toml");
+                let devis_config_path = p.join("devis").join(CONFIG_FILE_NAME);
                 if devis_config_path.exists() {
                     found = Some(devis_config_path)
                 }
@@ -61,7 +66,7 @@ impl ConfigFile {
 
         match current_exe() { // check location of current executable
             Ok(p) => {
-                let devis_config_path = p.join("devis.toml");
+                let devis_config_path = p.join(CONFIG_FILE_NAME);
                 if devis_config_path.exists() {
                     found = Some(devis_config_path)
                 }

@@ -14,8 +14,13 @@ fn run() -> Result<()> {
     color_eyre::install()?;
 
     let config = match ConfigFile::check_file() { // check if config file exists; if so, read the contents to config
-        Some(_) => {},
-        None => ConfigFile::create_default(),
+        Some(p) => {
+            match ConfigFile::load(p) {
+                Ok(c) => c,
+                Err(_) => ConfigFile::create_default(), //TODO: ultimately want to prompt user to create config or not
+            }
+        },
+        None => ConfigFile::create_default(), //TODO: ultimately want to prompt user to create config or not
     };
 
     let args = config::CommandLineArgs::parse();
