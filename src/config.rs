@@ -1,8 +1,10 @@
-use std::path::PathBuf;
+use std::fs;
+use std::path::{PathBuf};
 use std::env::current_exe;
+use std::result::Result::Ok;
 
 use clap::{Parser, Subcommand};
-use color_eyre::eyre::{self, Result};
+use color_eyre::eyre::{eyre, Result};
 use dirs::config_dir;
 use serde::Deserialize;
 
@@ -27,9 +29,6 @@ pub enum Commands {
     },
 }
 
-// TODO: need to add config file reader and creator here.
-//  known needed fields:
-//   - default_note_dir
 #[derive(Deserialize, Default, Debug)]
 #[serde(deny_unknown_fields)]
 /// Configuration file
@@ -38,11 +37,39 @@ pub struct ConfigFile {
 }
 
 impl ConfigFile {
-    pub fn check_file() -> Result<Option<PathBuf>> {
-        // check for existence at config dir and local to executable
-        
+    pub fn load(config_path: PathBuf) -> Result<ConfigFile> {
+        let contents = match fs::read_to_string(config_path) {
+            Ok(c) => Ok(c),
+            Err(_) => eyre!("unable to read config file"),
+        };
 
-        Ok(None)
+        
+    }
+
+    pub fn check_file() -> Option<PathBuf> {
+        // check for existence at config dir and local to executable
+        let mut found: Option<PathBuf> = None;
+        match config_dir() { // check first in config dir
+            Some(p) => {
+                let devis_config_path = p.join("devis").join("devis.toml");
+                if devis_config_path.exists() {
+                    found = Some(devis_config_path)
+                }
+            },
+            _ => found = None,
+        };
+
+        match current_exe() { // check location of current executable
+            Ok(p) => {
+                let devis_config_path = p.join("devis.toml");
+                if devis_config_path.exists() {
+                    found = Some(devis_config_path)
+                }
+            },
+            Err(_) => found = None,
+        };
+
+        found
     }
 
     pub fn create_default() -> Self {

@@ -13,7 +13,10 @@ mod note;
 fn run() -> Result<()> {
     color_eyre::install()?;
 
-    let config = ConfigFile::create_default(); // TODO: we will first want to check if files exist and then prompt user to create if wanted
+    let config = match ConfigFile::check_file() { // check if config file exists; if so, read the contents to config
+        Some(_) => {},
+        None => ConfigFile::create_default(),
+    };
 
     let args = config::CommandLineArgs::parse();
     match args.cmd {
