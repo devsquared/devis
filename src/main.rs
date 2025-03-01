@@ -3,7 +3,7 @@ use std::result::Result::Ok;
 
 use clap::Parser;
 use color_eyre::eyre::Result;
-use config::Commands;
+use config::{Commands, ConfigFile};
 use note::create_note;
 
 mod config;
@@ -13,11 +13,19 @@ mod note;
 fn run() -> Result<()> {
     color_eyre::install()?;
 
-    
-    let args = config::CommandLineArgs::parse();
+    let config = match ConfigFile::check_file() { // check if config file exists; if so, read the contents to config
+        Some(p) => {
+            match ConfigFile::load(p) {
+                Ok(c) => c,
+                Err(_) => ConfigFile::create_default(), //TODO: ultimately want to prompt user to create config or not
+            }
+        },
+        None => ConfigFile::create_default(), //TODO: ultimately want to prompt user to create config or not
+    };
 
+    let args = config::CommandLineArgs::parse();
     match args.cmd {
-        Commands::Note { name, path, with_toc } => return create_note(name, path, with_toc),
+        Commands::Note { name, path, with_toc } => return create_note(name, path, with_toc, config.default_note_dir),
     }
 }
 
